@@ -1,7 +1,6 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
 	"html/template"
 	"net/http"
@@ -57,9 +56,6 @@ func (c *ConfigController) handleGetConfig(w http.ResponseWriter, r *http.Reques
 func (c *ConfigController) handleSetConfig(w http.ResponseWriter, r *http.Request) {
 	r.ParseForm()
 
-	z, err := json.Marshal(r.Form)
-	fmt.Println(string(z))
-
 	nam := r.Form.Get("locationname")
 	lon := r.Form.Get("longitude")
 	lat := r.Form.Get("latitude")
@@ -89,7 +85,7 @@ func (c *ConfigController) handleSetConfig(w http.ResponseWriter, r *http.Reques
 		return
 	}
 	p, err := strconv.Atoi(prv)
-	if err != nil || p != 0 {
+	if err != nil || p < 0 || p > 1 {
 		http.Error(w, "Invalid Forecast Provider value", 500)
 		return
 	}
@@ -101,10 +97,15 @@ func (c *ConfigController) handleSetConfig(w http.ResponseWriter, r *http.Reques
 	c.LogInfo("Setting new configuration values.")
 
 	c.Srv.Config.LocationName = nam
-	c.Srv.Config.Longitude = float32(a)
-	c.Srv.Config.Latitude = float32(b)
+	if c.Srv.Config.Longitude != float32(a) || c.Srv.Config.Latitude != float32(b) {
+		c.Srv.Config.Longitude = float32(a)
+		c.Srv.Config.Latitude = float32(b)
+		// Reset the location ID
+		c.Srv.Config.LocationID = ""
+	}
 	c.Srv.Config.Provider = p
 	c.Srv.Config.AppID = app
+
 	c.Srv.Config.SetDefaults()
 
 	c.Srv.Config.WriteToFile("config.json")

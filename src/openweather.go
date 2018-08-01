@@ -12,9 +12,7 @@ import (
 
 // OpenWeather is an interface to the OpenWeatherMap internet API
 type OpenWeather struct {
-	Longitude float32 // Longitude of the location to get weather for
-	Latitude  float32 // Latitide of the location to get weather for
-	AppID     string  // Application ID for OpenWeather
+	Config *Config // Current Configuration
 }
 
 type owWeatherResponse struct {
@@ -103,21 +101,41 @@ type owForecastResponse struct {
 	} `json:"city"`
 }
 
+// SetConfig sets the configuration for the provider
+func (o *OpenWeather) SetConfig(c *Config) {
+	o.Config = c
+}
+
+// GetProviderName returns the name of the provider
+func (o *OpenWeather) GetProviderName() string {
+	return "OpenWeather"
+}
+
 // GetWeather returns the current weather for the location
-func (o *OpenWeather) GetWeather() (*Weather, error) {
-	w := &Weather{}
-	url := fmt.Sprintf("http://api.openweathermap.org/data/2.5/weather?lat=%f&lon=%f&appid=%s&units=metric", o.Latitude, o.Longitude, o.AppID)
+func (o *OpenWeather) GetWeather() (Weather, error) {
+	w := Weather{
+		Provider: o.GetProviderName(),
+		Created:  time.Now(),
+	}
+
+	url := fmt.Sprintf("http://api.openweathermap.org/data/2.5/weather?lat=%f&lon=%f&appid=%s&units=metric", o.Config.Latitude, o.Config.Longitude, o.Config.AppID)
 	var resp, err = http.Get(url)
 	if err == nil {
-		err = o.decodeWeather(w, resp.Body)
+		err = o.decodeWeather(&w, resp.Body)
 	}
 	return w, err
 }
 
 // GetForecast returns the current forecast for the location
 func (o *OpenWeather) GetForecast() (Forecast, error) {
-	f := Forecast{}
-	url := fmt.Sprintf("http://api.openweathermap.org/data/2.5/forecast?lat=%f&lon=%f&appid=%s&units=metric", o.Latitude, o.Longitude, o.AppID)
+	f := Forecast{
+		Current: Weather{
+			Provider: o.GetProviderName(),
+			Created:  time.Now(),
+		},
+	}
+
+	url := fmt.Sprintf("http://api.openweathermap.org/data/2.5/forecast?lat=%f&lon=%f&appid=%s&units=metric", o.Config.Latitude, o.Config.Longitude, o.Config.AppID)
 	var resp, err = http.Get(url)
 	if err == nil {
 		err = o.decodeForecast(&f, resp.Body)

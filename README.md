@@ -21,7 +21,10 @@ Once the microservice is running, navigate to http://localhost:20511/config.html
 
 The service will automatically detect the location based on your machine's public IP address.  You can change the Location information to be more accurate for your location.
 
-Currently the only supported provider is Open Weather.  You will need to obtain an Application ID from here https://openweathermap.org/appid
+You will need to obtain an Application ID for the chosen weather provider.  The following providers are available:
+
+* Open Weather (https://openweathermap.org/appid)
+* AccuWeather (https://developer.accuweather.com/)
 
 Paste your APPID value into the Application ID field and click Save.
 

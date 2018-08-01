@@ -11,4 +11,9 @@
 # Output of the go coverage tool, specifically when used with LiteIDE
 *.out
 /src/config.json
+/src/accuweather_test.json
+/src/openweather_test.json
+/src/test.json
+/src/lastweather.json
+/src/lastforecast.json
 /src/clientid

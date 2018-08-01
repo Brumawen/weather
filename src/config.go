@@ -12,9 +12,11 @@ import (
 // Config holds the configuration required for the Soil Monitor module.
 type Config struct {
 	LocationName string  `json:"locationName"`
+	LocationID   string  `json:"locationID"`
 	Latitude     float32 `json:"latitude"`
 	Longitude    float32 `json:"longitude"`
 	Provider     int     `json:"provider"`
+	Imperial     bool    `json:"imperial"`
 	AppID        string  `json:"appID"`
 }
 

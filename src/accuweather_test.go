@@ -6,14 +6,14 @@ import (
 	"testing"
 )
 
-func TestGetOpenWeather(t *testing.T) {
+func TestGetAccuWeather(t *testing.T) {
 	c := Config{}
-	err := c.ReadFromFile("openweather_test.json")
+	err := c.ReadFromFile("accuweather_test.json")
 	if err != nil {
 		t.Error(err)
 	}
 
-	o := OpenWeather{Config: &c}
+	o := AccuWeather{Config: &c}
 
 	w, err := o.GetWeather()
 	if err != nil {
@@ -29,14 +29,14 @@ func TestGetOpenWeather(t *testing.T) {
 	}
 }
 
-func TestGetOpenWeatherForecast(t *testing.T) {
+func TestGetAccuWeatherForecast(t *testing.T) {
 	c := Config{}
-	err := c.ReadFromFile("openweather_test.json")
+	err := c.ReadFromFile("accuweather_test.json")
 	if err != nil {
 		t.Error(err)
 	}
 
-	o := OpenWeather{Config: &c}
+	o := AccuWeather{Config: &c}
 
 	f, err := o.GetForecast()
 	if err != nil {
