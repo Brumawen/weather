@@ -16,11 +16,12 @@ type ConfigController struct {
 
 // ConfigPageData holds the data used to write to the configuration page.
 type ConfigPageData struct {
-	LocationName string
-	Longitude    string
-	Latitude     string
-	Provider     int
-	AppID        string
+	LocationName string // Name of the location
+	Longitude    string // Location Latitude
+	Latitude     string // Location Longitude
+	Provider     int    // Weather Provider: 0=OpenWeather, 1=AccuWeather
+	AppID        string // Provider Application Identifier
+	UnitType     int    // Unit Type: 0=Metric, 1=Imperial
 }
 
 // AddController adds the controller routes to the router
@@ -61,6 +62,7 @@ func (c *ConfigController) handleSetConfig(w http.ResponseWriter, r *http.Reques
 	lat := r.Form.Get("latitude")
 	prv := r.Form.Get("provider")
 	app := r.Form.Get("appid")
+	unt := r.Form.Get("unittype")
 
 	if lon == "" {
 		http.Error(w, "The Longitude of the forecast location must be specified", 500)
@@ -93,6 +95,15 @@ func (c *ConfigController) handleSetConfig(w http.ResponseWriter, r *http.Reques
 		http.Error(w, "The Forecast Provider Application ID must be selected", 500)
 		return
 	}
+	if unt == "" {
+		http.Error(w, "The unit type must be selected", 500)
+		return
+	}
+	u, err := strconv.Atoi(unt)
+	if err != nil || u < 0 || u > 1 {
+		http.Error(w, "Invalid Unit Type value", 500)
+		return
+	}
 
 	c.LogInfo("Setting new configuration values.")
 
@@ -105,6 +116,7 @@ func (c *ConfigController) handleSetConfig(w http.ResponseWriter, r *http.Reques
 	}
 	c.Srv.Config.Provider = p
 	c.Srv.Config.AppID = app
+	c.Srv.Config.UnitType = u
 
 	c.Srv.Config.SetDefaults()
 

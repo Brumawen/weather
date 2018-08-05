@@ -61,6 +61,17 @@
                     <input class="uk-input uk-form-width-large" id="appid" name="appid" type="text" placeholder="Application ID" value="{{.AppID}}">
                 </div>
             </div>
+            <div class="uk-margin">
+                <label class="uk-form-label" for="unittype">
+                    Unit of Measure
+                </label>
+                <div class="uk-form-controls">
+                    <Select class="uk-select uk-form-width-large" id="unittype" name="unittype">
+                        <option value="0">Celcius</option>
+                        <option value="1">Farenheit</option>
+                    </Select>
+                </div>
+            </div>
         </fieldset>
         <fieldset class="uk-fieldset uk-margin-top">
             <input class="uk-button uk-button-primary" type="submit" value="Save Changes">

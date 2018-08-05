@@ -11,13 +11,13 @@ import (
 
 // Config holds the configuration required for the Soil Monitor module.
 type Config struct {
-	LocationName string  `json:"locationName"`
-	LocationID   string  `json:"locationID"`
-	Latitude     float32 `json:"latitude"`
-	Longitude    float32 `json:"longitude"`
-	Provider     int     `json:"provider"`
-	Imperial     bool    `json:"imperial"`
-	AppID        string  `json:"appID"`
+	LocationName string  `json:"locationName"` // Name of the Location
+	LocationID   string  `json:"locationID"`   // Location identifier
+	Latitude     float32 `json:"latitude"`     // Location Latitude
+	Longitude    float32 `json:"longitude"`    // Location Longitude
+	Provider     int     `json:"provider"`     // Provider type: 0=OpenWeather, 1=AccuWeather
+	UnitType     int     `json:"unitType"`     // Unit type: 0=Metric, 1=Imperial
+	AppID        string  `json:"appID"`        // Provider Application Identifier
 }
 
 // ReadFromFile will read the configuration settings from the specified file

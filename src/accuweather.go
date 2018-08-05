@@ -158,7 +158,16 @@ func (p *AccuWeather) GetWeather() (Weather, error) {
 	url := fmt.Sprintf("http://dataservice.accuweather.com/currentconditions/v1/%s?apikey=%s&details=true", p.Config.LocationID, p.Config.AppID)
 	resp, err := http.Get(url)
 	if err == nil {
+		// Load the weather from the response
 		err = p.decodeWeather(&w, resp.Body)
+	}
+	if err == nil {
+		// Load the sunrise and sunset times
+		sr, ss, err := GetSunriseSunset(p.Config, time.Now())
+		if err == nil {
+			w.Sunrise = sr
+			w.Sunset = ss
+		}
 	}
 	if err == nil {
 		w.WriteToFile("lastweather.json")
@@ -180,13 +189,19 @@ func (p *AccuWeather) GetForecast() (Forecast, error) {
 	}
 
 	metric := "true"
-	if p.Config.Imperial {
+	if p.Config.UnitType != 0 {
 		metric = "false"
 	}
 	url := fmt.Sprintf("http://dataservice.accuweather.com/forecasts/v1/daily/5day/%s?metric=%s&apikey=%s", p.Config.LocationID, metric, p.Config.AppID)
 	resp, err := http.Get(url)
 	if err == nil {
 		err = p.decodeForecast(&f, resp.Body)
+	}
+	if err == nil {
+		// Get the current weather as well
+		if w, err := p.GetWeather(); err == nil {
+			f.Current = w
+		}
 	}
 	return f, err
 }
@@ -202,7 +217,7 @@ func (p *AccuWeather) decodeWeather(w *Weather, r io.ReadCloser) error {
 				w.ReadingTime = r1.LocalObservationDateTime
 				w.Humidity = float32(r1.RelativeHumidity)
 				w.WindDirection = float32(r1.Wind.Direction.Degrees)
-				if p.Config.Imperial {
+				if p.Config.UnitType != 0 {
 					// Get imperial values
 					w.Temp = float32(r1.Temperature.Imperial.Value)
 					w.Pressure = float32(r1.Pressure.Imperial.Value)
@@ -213,6 +228,7 @@ func (p *AccuWeather) decodeWeather(w *Weather, r io.ReadCloser) error {
 					w.Pressure = float32(r1.Pressure.Metric.Value)
 					w.WindSpeed = float32(r1.Wind.Speed.Metric.Value)
 				}
+
 			}
 		}
 	}
@@ -263,6 +279,8 @@ func (p *AccuWeather) checkConfig() error {
 			return errors.New(r.Message)
 		}
 		p.Config.LocationID = r.Key
+
+		p.Config.WriteToFile("config.json")
 	}
 	return nil
 }
