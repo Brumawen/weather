@@ -7,6 +7,7 @@ import (
 	"github.com/kelvins/sunrisesunset"
 )
 
+// GetSunriseSunset returns the Sunset and Sunrise times for the provided date and the location specified in the provided configuration
 func GetSunriseSunset(c *Config, t time.Time) (time.Time, time.Time, error) {
 	y := t.Year()
 	m := t.Month()

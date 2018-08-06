@@ -7,6 +7,7 @@ import (
 	"io"
 	"io/ioutil"
 	"net/http"
+	"strings"
 	"time"
 )
 
@@ -154,6 +155,7 @@ func (p *AccuWeather) GetWeather() (Weather, error) {
 		return w, err
 	}
 	w.ID = p.Config.LocationID
+	w.Name = p.Config.LocationName
 
 	url := fmt.Sprintf("http://dataservice.accuweather.com/currentconditions/v1/%s?apikey=%s&details=true", p.Config.LocationID, p.Config.AppID)
 	resp, err := http.Get(url)
@@ -210,10 +212,14 @@ func (p *AccuWeather) decodeWeather(w *Weather, r io.ReadCloser) error {
 	b, err := ioutil.ReadAll(r)
 	if err == nil {
 		if b != nil && len(b) != 0 {
+			ioutil.WriteFile("lastweatherresp.json", b, 0666)
 			var r = accuWeatherResponse{}
 			err = json.Unmarshal(b, &r)
 			if err == nil && r != nil && len(r) != 0 {
 				r1 := r[0]
+				w.WeatherIcon = p.getWeatherIcon(r1.WeatherIcon)
+				w.IsDay = r1.IsDayTime
+				w.WeatherDesc = strings.Title(r1.WeatherText)
 				w.ReadingTime = r1.LocalObservationDateTime
 				w.Humidity = float32(r1.RelativeHumidity)
 				w.WindDirection = float32(r1.Wind.Direction.Degrees)
@@ -228,7 +234,6 @@ func (p *AccuWeather) decodeWeather(w *Weather, r io.ReadCloser) error {
 					w.Pressure = float32(r1.Pressure.Metric.Value)
 					w.WindSpeed = float32(r1.Wind.Speed.Metric.Value)
 				}
-
 			}
 		}
 	}
@@ -239,6 +244,7 @@ func (p *AccuWeather) decodeForecast(f *Forecast, r io.ReadCloser) error {
 	b, err := ioutil.ReadAll(r)
 	if err == nil {
 		if b != nil && len(b) != 0 {
+			ioutil.WriteFile("lastforecastresp.json", b, 0666)
 			var r = accuForecastResponse{}
 			err = json.Unmarshal(b, &r)
 			if err == nil && r.DailyForecasts != nil && len(r.DailyForecasts) != 0 {
@@ -248,7 +254,18 @@ func (p *AccuWeather) decodeForecast(f *Forecast, r io.ReadCloser) error {
 					fd.Name = d.Date.Weekday().String()[:3]
 					fd.TempMax = float32(d.Temperature.Maximum.Value)
 					fd.TempMin = float32(d.Temperature.Minimum.Value)
-					f.Days = append(f.Days, fd)
+
+					di := p.getWeatherIcon(d.Day.Icon)
+					ni := p.getWeatherIcon(d.Night.Icon)
+					if di >= ni {
+						fd.WeatherIcon = di
+						fd.WeatherDesc = strings.Title(d.Day.IconPhrase)
+					} else {
+						fd.WeatherIcon = ni
+						fd.WeatherDesc = strings.Title(d.Night.IconPhrase)
+					}
+					f.Forecast = append(f.Forecast, fd)
+
 				}
 			}
 		}
@@ -283,4 +300,39 @@ func (p *AccuWeather) checkConfig() error {
 		p.Config.WriteToFile("config.json")
 	}
 	return nil
+}
+
+func (p *AccuWeather) getWeatherIcon(i int) int {
+	// Icon numbers:
+	// 1 = Clear sky			> 1, 2, 33, 34
+	// 2 = Scattered clouds		> 3, 4, 35, 36
+	// 3 = Partly cloudy		> 5, 6, 37
+	// 4 = Cloudy				> 7, 8, 38
+	// 5 = Scattered Rain		> 13, 14, 39
+	// 6 = Rain					> 12, 18, 40
+	// 7 = Thunderstorms		> 15, 16, 17, 41, 42
+	// 8 = Snow					> 19-27, 43, 44
+	// 9 = Mist/ Fog			> 11
+	switch i {
+	case 1, 2, 33, 34:
+		return 1
+	case 3, 4, 35, 36:
+		return 2
+	case 5, 6, 37:
+		return 3
+	case 7, 8, 38:
+		return 4
+	case 13, 14, 39:
+		return 5
+	case 12, 18, 40:
+		return 6
+	case 15, 16, 17, 41, 42:
+		return 7
+	case 19, 20, 21, 22, 23, 24, 25, 26, 27, 43, 44:
+		return 8
+	case 11:
+		return 9
+	default:
+		return 0
+	}
 }

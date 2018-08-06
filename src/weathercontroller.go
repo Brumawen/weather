@@ -16,6 +16,7 @@ type WeatherController struct {
 	Srv *Server
 }
 
+// WeatherPageData holds the data used to populate the weather html page
 type WeatherPageData struct {
 	UnitType      int           // Unit Type: 0=Metric, 1=Imperial
 	Temp          float32       // Current Temperature
@@ -74,9 +75,9 @@ func (c *WeatherController) handleWeatherWebPage(w http.ResponseWriter, r *http.
 		WindDirection: cf.Current.WindDirection,
 		Sunrise:       cf.Current.Sunrise,
 		Sunset:        cf.Current.Sunset,
-		Forecast:      cf.Days,
+		Forecast:      cf.Forecast,
 	}
-	v.MoonIcon, v.MoonDesc = c.getMoonInfo()
+	v.MoonIcon, v.MoonDesc = c.getMoonIconInfo()
 
 	t := template.Must(template.ParseFiles("./html/weather.html"))
 	t.Execute(w, v)
@@ -176,8 +177,63 @@ func (c *WeatherController) getCurrentForecast(p WeatherProvider) Forecast {
 	return cf
 }
 
-func (c *WeatherController) getWeatherIconInfo(i string, day bool) string {
+func (c *WeatherController) getWeatherIconInfo(i int, day bool) string {
+	// Icon numbers:
+	// 1 = Clear sky
+	// 2 = Scattered clouds
+	// 3 = Partly cloudy
+	// 4 = Cloudy
+	// 5 = Scattered Rain
+	// 6 = Rain
+	// 7 = Thunderstorms
+	// 8 = Snow
+	// 9 = Mist/ Fog
+	if day {
+		switch i {
+		case 1:
+			return "wi-day-sunny"
+		case 2:
+			return "wi-day-cloudy"
+		case 3:
+			return "wi-cloud"
+		case 4:
+			return "wi-cloudy"
+		case 5:
+			return "wi-day-rain"
+		case 6:
+			return "wi-rain"
+		case 7:
+			return "wi-thunderstorm"
+		case 8:
+			return "wi-snow"
+		case 9:
+			return "wi-dust"
+		}
+	} else {
+		switch i {
+		case 1:
+			return "wi-night-clear"
+		case 2:
+			return "wi-night-alt-cloudy"
+		case 3:
+			return "wi-cloud"
+		case 4:
+			return "wi-cloudy"
+		case 5:
+			return "wi-night-alt-rain"
+		case 6:
+			return "wi-rain"
+		case 7:
+			return "wi-thunderstorm"
+		case 8:
+			return "wi-snow"
+		case 9:
+			return "wi-dust"
+		}
+	}
 
+	// Return this if we have an icon we don't know how to deal with
+	return "wi-alien"
 }
 
 func (c *WeatherController) getMoonIconInfo() (string, string) {
@@ -238,7 +294,7 @@ func (c *WeatherController) getMoonIconInfo() (string, string) {
 		return "wi-moon-alt-waning-crescent-4", "Waning Crescent"
 	case 26:
 		return "wi-moon-alt-waning-crescent-5", "Waning Crescent"
-	case 27:
+	default:
 		return "wi-moon-alt-waning-crescent-6", "Waning Crescent"
 	}
 }

@@ -19,7 +19,9 @@ type Weather struct {
 	Humidity      float32   `json:"humidity"`      // Current Humidity
 	WindSpeed     float32   `json:"windSpeed"`     // Current Wind Speed
 	WindDirection float32   `json:"windDirection"` // Current Wind Direction
-	Icon          string    `json:"icon"`          // Weather Icon
+	WeatherIcon   int       `json:"weatherIcon"`   // Weather Icon
+	WeatherDesc   string    `json:"weatherDesc"`   // Weather Description
+	IsDay         bool      `json:"isDay"`         // Indicates if the weather report is for the day time
 	ReadingTime   time.Time `json:"readingTime"`   // Date and Time the reading was taken
 	Sunrise       time.Time `json:"sunrise"`       // Time of Sunrise
 	Sunset        time.Time `json:"sunset"`        // Time of Sunset
@@ -27,17 +29,18 @@ type Weather struct {
 
 // Forecast holds the current weather and the forecast weather information
 type Forecast struct {
-	Current Weather       // Current Weather
-	Days    []ForecastDay // Weather Forecast
+	Current  Weather       `json:"current"`  // Current Weather
+	Forecast []ForecastDay `json:"forecast"` // Weather Forecast
 }
 
 // ForecastDay holds the temperature and weather forecase for a particular day
 type ForecastDay struct {
-	Day     time.Time // Forecast date
-	Name    string    // Name of the day
-	TempMin float32   // Minimum Temperature
-	TempMax float32   // Maximum Temperature
-	Icon    string    // Weather Icon
+	Day         time.Time `json:"day"`         // Forecast date
+	Name        string    `json:"name"`        // Name of the day
+	TempMin     float32   `json:"tempMin"`     // Minimum Temperature
+	TempMax     float32   `json:"tempMax"`     // Maximum Temperature
+	WeatherIcon int       `json:"weatherIcon"` // Weather Icon
+	WeatherDesc string    `json:"weatherDesc"` // Weather description
 }
 
 // ReadFromFile will read the weather information from the specified file

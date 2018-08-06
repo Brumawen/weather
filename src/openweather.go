@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -116,6 +117,7 @@ func (o *OpenWeather) GetWeather() (Weather, error) {
 	w := Weather{
 		Provider: o.GetProviderName(),
 		Created:  time.Now(),
+		Name:     o.Config.LocationName,
 	}
 
 	url := fmt.Sprintf("http://api.openweathermap.org/data/2.5/weather?lat=%f&lon=%f&appid=%s&units=metric", o.Config.Latitude, o.Config.Longitude, o.Config.AppID)
@@ -132,6 +134,7 @@ func (o *OpenWeather) GetForecast() (Forecast, error) {
 		Current: Weather{
 			Provider: o.GetProviderName(),
 			Created:  time.Now(),
+			Name:     o.Config.LocationName,
 		},
 	}
 
@@ -148,13 +151,15 @@ func (o *OpenWeather) decodeWeather(w *Weather, r io.ReadCloser) error {
 	b, err := ioutil.ReadAll(r)
 	if err == nil {
 		if b != nil && len(b) != 0 {
+			ioutil.WriteFile("lastweatherresp.json", b, 0666)
 			var resp = owWeatherResponse{}
 			err = json.Unmarshal(b, &resp)
 			if err == nil {
 				w.ID = strconv.Itoa(resp.ID)
 				w.Name = resp.Name
 				if len(resp.Weather) != 0 {
-					w.Icon = resp.Weather[0].Icon
+					cwi := resp.Weather[0]
+					w.WeatherIcon, w.WeatherDesc, w.IsDay = o.getWeatherIconInfo(cwi.Icon, cwi.Description)
 				}
 				w.Temp = resp.Main.Temp
 				w.Humidity = resp.Main.Humidity
@@ -174,17 +179,18 @@ func (o *OpenWeather) decodeForecast(f *Forecast, r io.Reader) error {
 	b, err := ioutil.ReadAll(r)
 	if err == nil {
 		if b != nil && len(b) != 0 {
+			ioutil.WriteFile("lastforecastresp.json", b, 0666)
 			var resp = owForecastResponse{}
 			err = json.Unmarshal(b, &resp)
 			if err == nil {
 				if len(resp.List) != 0 {
 					// Current weather
 					cw := resp.List[0]
-					f.Current = Weather{}
-					f.Current.ID = string(resp.City.ID)
+					f.Current.ID = strconv.Itoa(resp.City.ID)
 					f.Current.Name = resp.City.Name
 					if len(cw.Weather) != 0 {
-						f.Current.Icon = cw.Weather[0].Icon
+						cwi := cw.Weather[0]
+						f.Current.WeatherIcon, f.Current.WeatherDesc, f.Current.IsDay = o.getWeatherIconInfo(cwi.Icon, cwi.Description)
 					}
 					f.Current.Temp = cw.Main.Temp
 					f.Current.Humidity = cw.Main.Humidity
@@ -202,19 +208,20 @@ func (o *OpenWeather) decodeForecast(f *Forecast, r io.Reader) error {
 						iDay := time.Date(ct.Year(), ct.Month(), ct.Day(), 0, 0, 0, 0, ct.Location())
 						if iDay.Year() != cf.Day.Year() || iDay.YearDay() != cf.Day.YearDay() {
 							// Date has changed
-							f.Days = append(f.Days, cf)
+							f.Forecast = append(f.Forecast, cf)
 							cf = ForecastDay{}
 							cf.Day = time.Date(ct.Year(), ct.Month(), ct.Day(), 0, 0, 0, 0, ct.Location())
 						}
-						if cf.Icon == "" {
+						if cf.Name == "" {
 							cf.TempMin = i.Main.Temp
 							cf.TempMax = i.Main.Temp
 							cf.Day = ct
 							cf.Name = ct.Weekday().String()[:3]
 							if len(i.Weather) != 0 {
-								cf.Icon = i.Weather[0].Icon
+								cwi := i.Weather[0]
+								cf.WeatherIcon, cf.WeatherDesc, _ = o.getWeatherIconInfo(cwi.Icon, cwi.Description)
 							} else {
-								cf.Icon = "00d"
+								cf.WeatherIcon = 0
 							}
 						} else {
 							if i.Main.Temp < cf.TempMin {
@@ -224,24 +231,62 @@ func (o *OpenWeather) decodeForecast(f *Forecast, r io.Reader) error {
 								cf.TempMax = i.Main.Temp
 							}
 							if len(i.Weather) != 0 {
-								icon := i.Weather[0].Icon
-								a, err := strconv.Atoi(cf.Icon[:2])
-								if err == nil {
-									b, err := strconv.Atoi(icon[:2])
-									if err == nil {
-										if b > a {
-											cf.Icon = icon
-										}
-									}
+								// Update the current forecast if the weather is more extreem that the current
+								cwi := i.Weather[0]
+								ci, cd, _ := o.getWeatherIconInfo(cwi.Icon, cwi.Description)
+								if ci > cf.WeatherIcon {
+									cf.WeatherIcon = ci
+									cf.WeatherDesc = cd
 								}
 							}
 						}
 
 					}
-					f.Days = append(f.Days, cf)
+					f.Forecast = append(f.Forecast, cf)
 				}
 			}
 		}
 	}
 	return err
+
+}
+
+func (o *OpenWeather) getWeatherIconInfo(i string, d string) (int, string, bool) {
+	// Icon numbers:
+	// 1 = Clear sky			> 01
+	// 2 = Scattered clouds		> 02
+	// 3 = Partly cloudy		> 03
+	// 4 = Cloudy				> 04
+	// 5 = Scattered Rain		> 10
+	// 6 = Rain					> 09
+	// 7 = Thunderstorms		> 11
+	// 8 = Snow					> 13
+	// 9 = Mist/ Fog			> 50
+	d = strings.Title(d)
+	if i == "" || len(i) != 3 {
+		return 0, d, true
+	}
+	isDay := strings.ToLower(i[2:2]) == "d"
+	switch i[:2] {
+	case "01":
+		return 1, d, isDay
+	case "02":
+		return 2, d, isDay
+	case "03":
+		return 3, d, isDay
+	case "04":
+		return 4, d, isDay
+	case "10":
+		return 5, d, isDay
+	case "09":
+		return 6, d, isDay
+	case "11":
+		return 7, d, isDay
+	case "13":
+		return 8, d, isDay
+	case "50":
+		return 9, d, isDay
+	default:
+		return 0, d, isDay
+	}
 }
