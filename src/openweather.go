@@ -216,7 +216,7 @@ func (o *OpenWeather) decodeForecast(f *Forecast, r io.Reader) error {
 							cf.TempMin = i.Main.Temp
 							cf.TempMax = i.Main.Temp
 							cf.Day = ct
-							cf.Name = ct.Weekday().String()[:3]
+							cf.Name = ct.Weekday().String()
 							if len(i.Weather) != 0 {
 								cwi := i.Weather[0]
 								cf.WeatherIcon, cf.WeatherDesc, _ = o.getWeatherIconInfo(cwi.Icon, cwi.Description)

@@ -18,19 +18,29 @@ type WeatherController struct {
 
 // WeatherPageData holds the data used to populate the weather html page
 type WeatherPageData struct {
-	UnitType      int           // Unit Type: 0=Metric, 1=Imperial
-	Temp          float32       // Current Temperature
-	Pressure      float32       // Current Pressure
-	Humidity      float32       // Current Humidity
-	WindSpeed     float32       // Wind Speed
-	WindDirection float32       // Wind Direction
-	Sunrise       time.Time     // Time of sunrise
-	Sunset        time.Time     // Time of sunset
-	ReadTime      time.Time     // Time reading was taken
-	WeatherIcon   string        // Weather Icon
-	MoonIcon      string        // Moon Icon
-	MoonDesc      string        // Moon Description
-	Forecast      []ForecastDay // Forecast
+	UnitIcon      string             // Unit of measure icon
+	Temp          float32            // Current Temperature
+	Pressure      float32            // Current Pressure
+	Humidity      float32            // Current Humidity
+	WindSpeed     float32            // Wind Speed
+	WindDirection float32            // Wind Direction
+	Sunrise       string             // Time of sunrise
+	Sunset        string             // Time of sunset
+	ReadTime      time.Time          // Time reading was taken
+	WeatherIcon   string             // Weather Icon
+	WeatherDesc   string             // Weather description
+	MoonIcon      string             // Moon Icon
+	MoonDesc      string             // Moon Description
+	Forecast      []ForecastPageData // Forecast
+}
+
+// ForecastPageData holds the forecast data used to populate the weather html page
+type ForecastPageData struct {
+	DayName     string // Name of the day
+	TempMin     int    // Minimum temperature
+	TempMax     int    // Maximum temperature
+	WeatherIcon string // Weather Icon
+	WeatherDesc string // Weather description
 }
 
 // AddController adds the controller routes to the router
@@ -67,17 +77,31 @@ func (c *WeatherController) handleWeatherWebPage(w http.ResponseWriter, r *http.
 	cf := c.getCurrentForecast(p)
 
 	v := WeatherPageData{
-		UnitType:      c.Srv.Config.UnitType,
 		Temp:          cf.Current.Temp,
 		Pressure:      cf.Current.Pressure,
 		Humidity:      cf.Current.Humidity,
 		WindSpeed:     cf.Current.WindSpeed,
 		WindDirection: cf.Current.WindDirection,
-		Sunrise:       cf.Current.Sunrise,
-		Sunset:        cf.Current.Sunset,
-		Forecast:      cf.Forecast,
+		Sunrise:       cf.Current.Sunrise.Format("3:04PM"),
+		Sunset:        cf.Current.Sunset.Format("3:04PM"),
+		WeatherIcon:   c.getWeatherIconInfo(cf.Current.WeatherIcon, cf.Current.IsDay),
+		WeatherDesc:   cf.Current.WeatherDesc,
+	}
+	if c.Srv.Config.UnitType == 0 {
+		v.UnitIcon = "wi-celsius"
+	} else {
+		v.UnitIcon = "wi-fahrenheit"
 	}
 	v.MoonIcon, v.MoonDesc = c.getMoonIconInfo()
+	for _, d := range cf.Forecast {
+		v.Forecast = append(v.Forecast, ForecastPageData{
+			DayName:     d.Name,
+			TempMin:     int(d.TempMin),
+			TempMax:     int(d.TempMax),
+			WeatherIcon: c.getWeatherIconInfo(d.WeatherIcon, true),
+			WeatherDesc: d.WeatherDesc,
+		})
+	}
 
 	t := template.Must(template.ParseFiles("./html/weather.html"))
 	t.Execute(w, v)

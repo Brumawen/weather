@@ -251,7 +251,7 @@ func (p *AccuWeather) decodeForecast(f *Forecast, r io.ReadCloser) error {
 				for _, d := range r.DailyForecasts {
 					fd := ForecastDay{}
 					fd.Day = d.Date
-					fd.Name = d.Date.Weekday().String()[:3]
+					fd.Name = d.Date.Weekday().String()
 					fd.TempMax = float32(d.Temperature.Maximum.Value)
 					fd.TempMin = float32(d.Temperature.Minimum.Value)
 

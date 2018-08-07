@@ -8,43 +8,82 @@
 
     <link rel="stylesheet" href="assets/css/uikit.min.css" />
     <link rel="stylesheet" href="assets/css/weather-icons.min.css" />
+    <link rel="stylesheet" href="assets/css/weather-icons-wind.min.css" />
 
     <script src="assets/js/uikit.min.js"></script>
     <script src="assets/js/uikit-icons.min.js"></script>
     <script src="assets/js/jquery-3.3.1.min.js"></script>
 </head>
 <body>
-    <div class="uk-grid-small uk-child-width-expand@s uk-text-center" uk-grid>
-    <div>
-        <div class="uk-card uk-card-default uk-card-body uk-background-muted">
-            <h3 class="uk-card-title">Title</h3>
-            Lorum Ipsum
+    <div class="uk-container">
+    <div class="uk-grid-small" uk-grid>
+        <div class="uk-width-1-1 uk-background-primary">
+            <div class="uk-card uk-card-primary uk-card-body">
+                <div class="uk-column-1-3@s uk-column-1-5@m">
+                    <p>
+                        <span class="uk-h1">
+                            <i class="wi {{.WeatherIcon}}"></i>
+                            {{.Temp}}
+                            <i class="wi {{.UnitIcon}}"></i>
+                        </span>
+                        <br>
+                        {{.WeatherDesc}}
+                    </p>
+                    <p>
+                        <span class="uk-h4">
+                            <i class="wi wi-humidity"></i>
+                            {{.Humidity}}
+                        </span>
+                        <br>
+                        <span class="uk-h4">
+                            <i class="wi wi-barometer"></i>
+                            {{.Pressure}}
+                        </span>
+                        <br>
+                        <span class="uk-h4">
+                            <i class="wi wi-wind towards-{{.WindDirection}}-deg"></i>
+                            {{.WindSpeed}}
+                        </span>
+                    </p>
+                    <p>
+                        <span class="uk-h4">
+                            <i class="wi wi-sunrise"></i>
+                            {{.Sunrise}}
+                        </span>
+                        <br>
+                        <span class="uk-h4">
+                            <i class="wi wi-sunset"></i>
+                            {{.Sunset}}
+                        </span>
+                    </p>
+                    <p>
+                        <span class="uk-h1">
+                            <i class="wi {{.MoonIcon}}"></i>
+                        </span>
+                        <br>
+                        {{.MoonDesc}}
+                    </p>
+                </div>
+            </div>
+        </div>
+        <div class="uk-grid-match uk-child-width-expand@s" uk-grid>
+        {{range .Forecast}}
+            <div class="uk-width-1-5@s">
+                <div class="uk-card uk-card-secondary uk-card-body">
+                    <h4>{{.DayName}}</h4>
+                    <span class="uk-h1">
+                        <i class="wi {{.WeatherIcon}}"></i>
+                    </span>
+                    <span class="uk-h4">
+                        {{.TempMax}} / {{.TempMin}}
+                    </span>
+                    <br>
+                    {{.WeatherDesc}}
+                </div>
+            </div>
+        {{end}}
         </div>
     </div>
-    <div>
-        <div class="uk-card uk-card-default uk-card-body uk-background-primary">
-            <h3 class="uk-panel-title"><i class="wi wi-day-sleet"></i>Title</h3>
-            Lorum Ipsum
-        </div>
     </div>
-    <div>
-        <div class="uk-card uk-card-default uk-card-body">
-            <h3 class="uk-panel-title"><i class="wi wi-day-sleet"></i>Title</h3>
-            Lorum Ipsum
-        </div>
-    </div>
-    <div>
-        <div class="uk-card uk-card-default uk-card-body uk-background-primary">
-            <h3 class="uk-panel-title">Title</h3>
-            Lorum Ipsum
-        </div>
-    </div>
-    <div>
-        <div class="uk-card uk-card-default uk-card-body uk-background-primary">
-            <h3 class="uk-panel-title">Title</h3>
-            Lorum Ipsum
-        </div>
-    </div>
-</div>
 </body>
 </html>
