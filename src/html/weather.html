@@ -39,11 +39,6 @@
                             <i class="wi wi-barometer"></i>
                             {{.Pressure}}
                         </span>
-                        <br>
-                        <span class="uk-h4">
-                            <i class="wi wi-wind towards-{{.WindDirection}}-deg"></i>
-                            {{.WindSpeed}}
-                        </span>
                     </p>
                     <p>
                         <span class="uk-h4">
@@ -58,11 +53,18 @@
                     </p>
                     <p>
                         <span class="uk-h1">
+                            <i class="wi wi-wind towards-{{.WindDirection}}-deg"></i>
+                            {{.WindSpeed}}
+                        </span>
+                    </p>
+                    <p>
+                        <span class="uk-h1">
                             <i class="wi {{.MoonIcon}}"></i>
                         </span>
                         <br>
                         {{.MoonDesc}}
                     </p>
+                    
                 </div>
             </div>
         </div>
