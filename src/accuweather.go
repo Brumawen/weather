@@ -219,7 +219,7 @@ func (p *AccuWeather) decodeWeather(w *Weather, r io.ReadCloser) error {
 				r1 := r[0]
 				w.WeatherIcon = p.getWeatherIcon(r1.WeatherIcon)
 				w.IsDay = r1.IsDayTime
-				w.WeatherDesc = strings.Title(r1.WeatherText)
+				w.WeatherDesc = strings.Replace(strings.Title(r1.WeatherText), "W/", "With", -1)
 				w.ReadingTime = r1.LocalObservationDateTime
 				w.Humidity = float32(r1.RelativeHumidity)
 				w.WindDirection = float32(r1.Wind.Direction.Degrees)
@@ -259,10 +259,10 @@ func (p *AccuWeather) decodeForecast(f *Forecast, r io.ReadCloser) error {
 					ni := p.getWeatherIcon(d.Night.Icon)
 					if di >= ni {
 						fd.WeatherIcon = di
-						fd.WeatherDesc = strings.Title(d.Day.IconPhrase)
+						fd.WeatherDesc = strings.Replace(strings.Title(d.Day.IconPhrase), "W/", "With", -1)
 					} else {
 						fd.WeatherIcon = ni
-						fd.WeatherDesc = strings.Title(d.Night.IconPhrase)
+						fd.WeatherDesc = strings.Replace(strings.Title(d.Night.IconPhrase), "W/", "With", -1)
 					}
 					f.Forecast = append(f.Forecast, fd)
 
