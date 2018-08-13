@@ -71,7 +71,7 @@ func (s *Server) Stop(v service.Service) error {
 // run will start up and run the service and wait for a Stop signal
 func (s *Server) run() {
 	if s.PortNo < 0 {
-		s.PortNo = 20510
+		s.PortNo = 20511
 	}
 	s.Finder.Logger = logger
 	s.Finder.VerboseLogging = service.Interactive()
