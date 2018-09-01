@@ -159,6 +159,9 @@ func (p *AccuWeather) GetWeather() (Weather, error) {
 
 	url := fmt.Sprintf("http://dataservice.accuweather.com/currentconditions/v1/%s?apikey=%s&details=true", p.Config.LocationID, p.Config.AppID)
 	resp, err := http.Get(url)
+	if resp != nil {
+		defer resp.Body.Close()
+	}
 	if err == nil {
 		// Load the weather from the response
 		err = p.decodeWeather(&w, resp.Body)
@@ -196,6 +199,9 @@ func (p *AccuWeather) GetForecast() (Forecast, error) {
 	}
 	url := fmt.Sprintf("http://dataservice.accuweather.com/forecasts/v1/daily/5day/%s?metric=%s&apikey=%s", p.Config.LocationID, metric, p.Config.AppID)
 	resp, err := http.Get(url)
+	if resp != nil {
+		defer resp.Body.Close()
+	}
 	if err == nil {
 		err = p.decodeForecast(&f, resp.Body)
 	}
@@ -280,6 +286,9 @@ func (p *AccuWeather) checkConfig() error {
 	if p.Config.LocationID == "" {
 		url := fmt.Sprintf("http://dataservice.accuweather.com/locations/v1/cities/geoposition/search?apikey=%s&q=%f%%2C%f", p.Config.AppID, p.Config.Latitude, p.Config.Longitude)
 		resp, err := http.Get(url)
+		if resp != nil {
+			defer resp.Body.Close()
+		}
 		if err != nil {
 			return errors.New("Error getting AccuWeather location information. " + err.Error())
 		}

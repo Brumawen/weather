@@ -122,6 +122,9 @@ func (o *OpenWeather) GetWeather() (Weather, error) {
 
 	url := fmt.Sprintf("http://api.openweathermap.org/data/2.5/weather?lat=%f&lon=%f&appid=%s&units=metric", o.Config.Latitude, o.Config.Longitude, o.Config.AppID)
 	var resp, err = http.Get(url)
+	if resp != nil {
+		defer resp.Body.Close()
+	}
 	if err == nil {
 		err = o.decodeWeather(&w, resp.Body)
 	}
@@ -140,6 +143,9 @@ func (o *OpenWeather) GetForecast() (Forecast, error) {
 
 	url := fmt.Sprintf("http://api.openweathermap.org/data/2.5/forecast?lat=%f&lon=%f&appid=%s&units=metric", o.Config.Latitude, o.Config.Longitude, o.Config.AppID)
 	var resp, err = http.Get(url)
+	if resp != nil {
+		defer resp.Body.Close()
+	}
 	if err == nil {
 		err = o.decodeForecast(&f, resp.Body)
 	}

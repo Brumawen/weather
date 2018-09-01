@@ -23,6 +23,9 @@ type IPLocation struct {
 // GetPublicIPAddress returns the public IP address of the current computer.
 func GetPublicIPAddress() (string, error) {
 	resp, err := http.Get("http://checkip.amazonaws.com/")
+	if resp != nil {
+		defer resp.Body.Close()
+	}
 	if err != nil {
 		return "", err
 	}
@@ -38,6 +41,9 @@ func GetPublicIPAddress() (string, error) {
 func GetIPLocationInfo() (IPLocation, error) {
 	info := IPLocation{}
 	resp, err := http.Get("http://ip-api.com/json")
+	if resp != nil {
+		defer resp.Body.Close()
+	}
 	if err != nil {
 		return info, err
 	}
