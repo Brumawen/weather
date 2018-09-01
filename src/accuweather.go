@@ -161,6 +161,7 @@ func (p *AccuWeather) GetWeather() (Weather, error) {
 	resp, err := http.Get(url)
 	if resp != nil {
 		defer resp.Body.Close()
+		resp.Close = true
 	}
 	if err == nil {
 		// Load the weather from the response
@@ -201,6 +202,7 @@ func (p *AccuWeather) GetForecast() (Forecast, error) {
 	resp, err := http.Get(url)
 	if resp != nil {
 		defer resp.Body.Close()
+		resp.Close = true
 	}
 	if err == nil {
 		err = p.decodeForecast(&f, resp.Body)
@@ -288,6 +290,7 @@ func (p *AccuWeather) checkConfig() error {
 		resp, err := http.Get(url)
 		if resp != nil {
 			defer resp.Body.Close()
+			resp.Close = true
 		}
 		if err != nil {
 			return errors.New("Error getting AccuWeather location information. " + err.Error())

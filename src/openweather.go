@@ -124,6 +124,7 @@ func (o *OpenWeather) GetWeather() (Weather, error) {
 	var resp, err = http.Get(url)
 	if resp != nil {
 		defer resp.Body.Close()
+		resp.Close = true
 	}
 	if err == nil {
 		err = o.decodeWeather(&w, resp.Body)
@@ -145,6 +146,7 @@ func (o *OpenWeather) GetForecast() (Forecast, error) {
 	var resp, err = http.Get(url)
 	if resp != nil {
 		defer resp.Body.Close()
+		resp.Close = true
 	}
 	if err == nil {
 		err = o.decodeForecast(&f, resp.Body)

@@ -25,6 +25,7 @@ func GetPublicIPAddress() (string, error) {
 	resp, err := http.Get("http://checkip.amazonaws.com/")
 	if resp != nil {
 		defer resp.Body.Close()
+		resp.Close = true
 	}
 	if err != nil {
 		return "", err
@@ -43,6 +44,7 @@ func GetIPLocationInfo() (IPLocation, error) {
 	resp, err := http.Get("http://ip-api.com/json")
 	if resp != nil {
 		defer resp.Body.Close()
+		resp.Close = true
 	}
 	if err != nil {
 		return info, err
