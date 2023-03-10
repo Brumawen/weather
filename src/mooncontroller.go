@@ -22,7 +22,7 @@ func (c *MoonController) AddController(router *mux.Router, s *Server) {
 
 // LogInfo is used to log information messages for this controller.
 func (c *MoonController) LogInfo(v ...interface{}) {
-	a := fmt.Sprint(v)
+	a := fmt.Sprint(v...)
 	logger.Info("MoonController: ", a[1:len(a)-1])
 }
 
