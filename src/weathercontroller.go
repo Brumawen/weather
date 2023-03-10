@@ -57,13 +57,13 @@ func (c *WeatherController) AddController(router *mux.Router, s *Server) {
 // LogInfo is used to log information messages for this controller.
 func (c *WeatherController) LogInfo(v ...interface{}) {
 	a := fmt.Sprint(v...)
-	logger.Info("WeatherController: ", a[1:len(a)-1])
+	logger.Info("WeatherController: ", a)
 }
 
 // LogError is used to log error messages for this controller.
 func (c *WeatherController) LogError(v ...interface{}) {
 	a := fmt.Sprint(v...)
-	logger.Error("WeatherController: ", a[1:len(a)-1])
+	logger.Error("WeatherController: ", a)
 }
 
 func (c *WeatherController) handleWeatherWebPage(w http.ResponseWriter, r *http.Request) {
