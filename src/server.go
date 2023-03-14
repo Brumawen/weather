@@ -19,7 +19,7 @@ type Server struct {
 	VerboseLogging bool              // Verbose logging on/ off
 	Timeout        int               // Timeout waiting for a response from an IP probe.  Defaults to 2 seconds.
 	Config         *Config           // Configuration settings
-	NoReg          bool              // Do not register with the finder server
+	Reg            bool              // Register with the finder server
 	Finder         gopifinder.Finder // Finder client - used to find other devices
 	exit           chan struct{}     // Exit flag
 	shutdown       chan struct{}     // Shutdown complete flag
@@ -35,17 +35,17 @@ func (s *Server) Start(v service.Service) error {
 	// Make sure the working directory is the same as the application exe
 	ap, err := os.Executable()
 	if err != nil {
-		s.logError("Error getting the executable path.", err.Error())
+		s.logError("Error getting the executable path. ", err.Error())
 	} else {
 		wd, err := os.Getwd()
 		if err != nil {
-			s.logError("Error getting current working directory.", err.Error())
+			s.logError("Error getting current working directory. ", err.Error())
 		} else {
 			ad := filepath.Dir(ap)
-			s.logInfo("Current application path is", ad)
+			s.logInfo("Current application path is ", ad)
 			if ad != wd {
 				if err := os.Chdir(ad); err != nil {
-					s.logError("Error chaning working directory.", err.Error())
+					s.logError("Error chaning working directory. ", err.Error())
 				}
 			}
 		}
@@ -99,7 +99,7 @@ func (s *Server) run() {
 		Handler: s.router,
 	}
 
-	if s.NoReg {
+	if !s.Reg {
 		s.logInfo("Not registering service with Finder server.")
 	} else {
 		s.logInfo("Registering service with Finder server.")
@@ -111,11 +111,11 @@ func (s *Server) run() {
 
 	// Start the web server
 	go func() {
-		s.logInfo("Server listening on port", s.PortNo)
+		s.logInfo("Server listening on port ", s.PortNo)
 		if err := s.http.ListenAndServe(); err != nil {
 			msg := err.Error()
 			if !strings.Contains(msg, "http: Server closed") {
-				s.logError("Error starting Web Server.", err.Error())
+				s.logError("Error starting Web Server. ", err.Error())
 			}
 		}
 	}()
@@ -147,7 +147,7 @@ func (s *Server) RegisterService() {
 		s.logDebug("RegisterService: Getting device info")
 		d, err := gopifinder.NewDeviceInfo()
 		if err != nil {
-			s.logError("Error getting device info.", err.Error())
+			s.logError("Error getting device info. ", err.Error())
 		}
 		s.logDebug("RegisterService: Creating service")
 		sv := d.CreateService("WeatherForecast")
@@ -156,13 +156,13 @@ func (s *Server) RegisterService() {
 		if sv.IPAddress == "" {
 			s.logDebug("RegisterService: No IP address found.")
 		} else {
-			s.logDebug("RegisterService: Using IP address", sv.IPAddress)
+			s.logDebug("RegisterService: Using IP address ", sv.IPAddress)
 		}
 
 		s.logDebug("Reg: Finding devices")
 		_, err = s.Finder.FindDevices()
 		if err != nil {
-			s.logError("RegisterService: Error getting list of devices.", err.Error())
+			s.logError("RegisterService: Error getting list of devices. ", err.Error())
 		} else {
 			if len(s.Finder.Devices) == 0 {
 				s.logDebug("RegisterService: Sleeping")

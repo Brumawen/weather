@@ -15,14 +15,14 @@ func main() {
 	port := flag.Int("p", 20511, "Port Number to listen on.")
 	timeout := flag.Int("t", 2, "Timeout in seconds to wait for a response from a IP probe.")
 	svcFlag := flag.String("service", "", "Service action.  Valid actions are: 'start', 'stop', 'restart', 'instal' and 'uninstall'")
-	noReg := flag.Bool("n", false, "Do not register the device with the finder server.")
+	reg := flag.Bool("n", false, "Register the device with the finder server.")
 	flag.Parse()
 
 	// Create a new server
 	s := &Server{
 		PortNo:  *port,
 		Timeout: *timeout,
-		NoReg:   *noReg,
+		Reg:     *reg,
 	}
 
 	// Create the service
@@ -58,7 +58,7 @@ func main() {
 			e := err.Error()
 			if strings.Contains(e, "Unknown action") {
 				fmt.Println(*svcFlag, "is an invalid action.")
-				fmt.Println("Valid actions are", service.ControlAction)
+				fmt.Println("Valid actions are ", service.ControlAction)
 			} else {
 				fmt.Println(err.Error())
 			}
